@@ -1,7 +1,7 @@
 # NetFlow — Network Change Impact Simulator
 
 **Tagline:** Understand your network before it fails.  
-**Team:** The Net Engineers
+**Team:** The Net Engineer
 
 NetFlow is a browser-based prototype for exploring network topology and estimating the impact of device or link failures. It uses a graph model and Breadth-First Search (BFS) to calculate which devices remain reachable from operational servers.
 
@@ -45,8 +45,7 @@ NetFlow is a **graph-based reachability simulator**, not a packet-level emulator
 ## Team
 
 - Ajay Sharma
-- Jay Bothra
-- Sushant Chaudhari
+
 
 ## Suggested demo flow
 
