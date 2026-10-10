@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>NetFlow — Network Change Impact Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="NetFlow home">
+        <span class="brand-mark"><span></span><span></span><span></span></span>
+        <span><strong>netflow</strong><small>NETWORK INTELLIGENCE</small></span>
+      </a>
+      <div class="workspace-label">WORKSPACE</div>
+      <button class="side-item active" id="workspaceBtn"><span class="side-icon">◈</span> Topology Lab <span class="side-dot"></span></button>
+      <div class="side-divider"></div>
+      <div class="workspace-label">QUICK START</div>
+      <button class="side-item" id="loadDemoBtn"><span class="side-icon">⌘</span> Load demo network</button>
+      <button class="side-item" id="saveBtn"><span class="side-icon">↧</span> Save topology</button>
+      <button class="side-item" id="exportBtn"><span class="side-icon">⇧</span> Export report</button>
+      <div class="sidebar-bottom">
+        <div class="status-card"><span class="pulse"></span><div><b>Simulation engine</b><small>Client-side · BFS graph search</small></div></div>
+        <div class="team-label">BUILT BY THE NET ENGINEERS</div>
+        <div class="tagline">Understand your network<br>before it fails.</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><div class="eyebrow">NETWORK OPERATIONS / LAB 01</div><h1>Topology Lab</h1></div>
+        <div class="top-actions"><span class="live-pill"><span></span> LOCAL SIMULATION</span><button class="icon-button" id="resetBtn" title="Reset workspace">↻</button></div>
+      </header>
+
+      <section class="stats-grid">
+        <article class="stat-card"><div class="stat-head"><span>DEVICES</span><span class="stat-icon blue">⌘</span></div><div class="stat-value" id="deviceCount">0</div><div class="stat-foot">Nodes in topology</div></article>
+        <article class="stat-card"><div class="stat-head"><span>CONNECTIONS</span><span class="stat-icon purple">⌁</span></div><div class="stat-value" id="linkCount">0</div><div class="stat-foot">Network links</div></article>
+        <article class="stat-card"><div class="stat-head"><span>HEALTHY</span><span class="stat-icon green">✓</span></div><div class="stat-value" id="healthyCount">0</div><div class="stat-foot">Devices operational</div></article>
+        <article class="stat-card"><div class="stat-head"><span>IMPACTED</span><span class="stat-icon orange">!</span></div><div class="stat-value" id="impactCount">0</div><div class="stat-foot">Unreachable devices</div></article>
+      </section>
+
+      <section class="content-grid">
+        <div class="panel topology-panel">
+          <div class="panel-heading">
+            <div><h2>Network topology</h2><p>Build a network, then test how it responds to failure.</p></div>
+            <div class="health-indicator" id="networkStatus"><span></span> NOT ANALYZED</div>
+          </div>
+          <div class="toolbar">
+            <div class="tool-group">
+              <button class="tool-btn" id="addRouter"><span class="device-symbol router-symbol">R</span> Router</button>
+              <button class="tool-btn" id="addSwitch"><span class="device-symbol switch-symbol">S</span> Switch</button>
+              <button class="tool-btn" id="addServer"><span class="device-symbol server-symbol">▣</span> Server</button>
+            </div>
+            <div class="tool-group">
+              <button class="tool-btn link-tool" id="linkMode"><span>⌁</span> Link mode: OFF</button>
+              <button class="tool-btn danger-tool" id="simulateBtn"><span>⚡</span> Analyze impact</button>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <div id="cy"></div>
+            <div class="canvas-hint" id="canvasHint"><span>✦</span><b>Start with a device</b><small>Add routers, switches, and servers using the toolbar.</small><button id="emptyDemoBtn">Load sample topology →</button></div>
+            <div class="canvas-legend"><span><i class="legend-dot operational"></i> Operational</span><span><i class="legend-dot failed"></i> Failed</span><span><i class="legend-dot impacted"></i> Unreachable</span></div>
+          </div>
+          <div class="canvas-footer"><span><kbd>Click</kbd> device to toggle up/down</span><span><kbd>Link mode</kbd> select two devices to connect</span><span><kbd>Drag</kbd> to reposition</span></div>
+        </div>
+
+        <aside class="panel inspector">
+          <div class="panel-heading"><div><h2>Device inspector</h2><p>Selected network component</p></div><span class="inspector-badge">INSPECT</span></div>
+          <div id="inspectorContent" class="inspector-content">
+            <div class="empty-inspector"><div class="empty-icon">◎</div><b>No device selected</b><p>Select a node in the topology to inspect its status and details.</p></div>
+          </div>
+          <div class="inspector-help"><span>TIP</span> Click a device to select it. Outside Link Mode, clicking a device toggles its operational state.</div>
+        </aside>
+      </section>
+
+      <section class="panel report-panel">
+        <div class="panel-heading report-heading"><div><h2>Impact analysis</h2><p>Reachability results and recommended recovery actions</p></div><span class="report-time" id="analysisTime">Awaiting analysis</span></div>
+        <div id="reportContent" class="report-content">
+          <div class="report-placeholder"><div class="report-placeholder-icon">⌁</div><div><b>Ready to analyze your network</b><p>Build or load a topology, mark a device or link as failed, then run impact analysis.</p></div></div>
+        </div>
+      </section>
+      <footer><span>NETFLOW <b>PROTOTYPE 0.1</b></span><span>Graph traversal powered by Breadth-First Search (BFS)</span><span>Made for Grevix AfterCode</span></footer>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
