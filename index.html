@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0b1220" />
-  <title>NetFlow — Network Change Impact Simulator</title>
+  <title>NetFlow v1.1 — Adaptive Network Change Impact Simulator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
       <button class="side-item" id="saveBtn"><span class="side-icon">↧</span> Save topology</button>
       <button class="side-item" id="exportBtn"><span class="side-icon">⇧</span> Export report</button>
       <div class="sidebar-bottom">
-        <div class="status-card"><span class="pulse"></span><div><b>Simulation engine</b><small>Client-side · BFS graph search</small></div></div>
+        <div class="status-card"><span class="pulse"></span><div><b>Simulation engine</b><small>Client-side · connected-component BFS</small></div></div>
         <div class="team-label">BUILT BY THE NET ENGINEERS</div>
         <div class="tagline">Understand your network<br>before it fails.</div>
       </div>
@@ -60,6 +60,7 @@
             <div class="tool-group">
               <button class="tool-btn link-tool" id="linkMode"><span>⌁</span> Link mode: OFF</button>
               <button class="tool-btn danger-tool" id="simulateBtn"><span>⚡</span> Analyze impact</button>
+              <button class="tool-btn concurrent-tool" id="concurrentDemoBtn"><span>⇄</span> Run concurrent test</button>
             </div>
           </div>
           <div class="canvas-wrap">
@@ -67,7 +68,11 @@
             <div class="canvas-hint" id="canvasHint"><span>✦</span><b>Start with a device</b><small>Add routers, switches, and servers using the toolbar.</small><button id="emptyDemoBtn">Load sample topology →</button></div>
             <div class="canvas-legend"><span><i class="legend-dot operational"></i> Operational</span><span><i class="legend-dot failed"></i> Failed</span><span><i class="legend-dot impacted"></i> Unreachable</span></div>
           </div>
-          <div class="canvas-footer"><span><kbd>Click</kbd> device to toggle up/down</span><span><kbd>Link mode</kbd> select two devices to connect</span><span><kbd>Drag</kbd> to reposition</span></div>
+          <div class="canvas-footer"><span><kbd>Click</kbd> device to select</span><span><kbd>Link mode</kbd> select two devices to connect</span><span><kbd>Drag</kbd> to reposition</span></div>
+          <div class="concurrency-bar">
+            <div><span class="sync-indicator" id="syncIndicator"></span><b>Concurrent change engine</b><small id="syncState">Local batching enabled · ready</small></div>
+            <div class="concurrency-metrics"><span>REV <b id="revisionValue">0</b></span><span>BATCH <b id="batchValue">0</b></span><span>QUEUE <b id="queueValue">0</b></span></div>
+          </div>
         </div>
 
         <aside class="panel inspector">
@@ -85,7 +90,7 @@
           <div class="report-placeholder"><div class="report-placeholder-icon">⌁</div><div><b>Ready to analyze your network</b><p>Build or load a topology, mark a device or link as failed, then run impact analysis.</p></div></div>
         </div>
       </section>
-      <footer><span>NETFLOW <b>PROTOTYPE 0.1</b></span><span>Graph traversal powered by Breadth-First Search (BFS)</span><span>Made for Grevix AfterCode</span></footer>
+      <footer><span>NETFLOW <b>CHALLENGE CARD 01</b></span><span>Connected-component detection powered by BFS</span><span>Made for Grevix AfterCode</span></footer>
     </main>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>

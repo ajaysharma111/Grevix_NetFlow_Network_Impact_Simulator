@@ -1,57 +1,89 @@
 # NetFlow — Network Change Impact Simulator
 
-**Tagline:** Understand your network before it fails.  
-**Team:** The Net Engineer
+**Tagline:** Understand your network before it fails.
 
-NetFlow is a browser-based prototype for exploring network topology and estimating the impact of device or link failures. It uses a graph model and Breadth-First Search (BFS) to calculate which devices remain reachable from operational servers.
+**Team:** The Net Engineers
+
+## Overview
+
+NetFlow is a browser-based network topology and change impact simulator. It allows users to build network topologies, simulate device and link failures, and analyse the reachability impact of network changes.
+
+The Phase 3 implementation extends the original project with concurrent topology update handling, conflict resolution and adaptive batching.
+
+## Problem
+
+In real network environments, multiple engineers may modify network topology simultaneously. Interleaved updates can produce stale or inconsistent impact reports. Recalculating the network after every individual update can also introduce unnecessary processing overhead.
+
+## Solution
+
+NetFlow introduces a concurrent change engine designed to synchronise topology changes across browser tabs and batch updates before impact analysis.
 
 ## Features
 
-- Add routers, switches, and servers to an interactive topology.
-- Connect devices with Link Mode (select two nodes).
-- Simulate device failures by clicking a node or using the inspector.
-- Simulate link failures by clicking a connection or using the inspector.
-- Run BFS-based reachability analysis and highlight unreachable devices.
-- Read a plain-language impact summary and recovery recommendation.
-- Load a sample network, save the topology in browser local storage, and export a text report.
-- Inspect node type, status, neighbors, and connection count.
+- Interactive network topology builder.
+- Router, switch and server components.
+- Network link creation and deletion.
+- Device and link failure simulation.
+- BFS-based reachability and impact analysis.
+- Concurrent topology updates across browser tabs.
+- Conflict handling for concurrent operations.
+- Adaptive batching of topology updates.
+- Save and export functionality.
+- Separate synthetic performance benchmark.
 
-## Run locally
+## Phase Evolution
 
-1. Download and unzip the project.
-2. Open `index.html` in Chrome, Edge, or another modern browser.
-3. Internet access is needed to load Cytoscape.js and the optional Google Fonts CDN.
-4. Click **Load demo network** if the sample topology is not already visible.
-5. Click **Analyze impact** to run the simulation.
-6. Click a router or link to mark it down, then analyze again.
-7. Click **Save topology** to save your current topology in this browser.
+### Phase 1 — Initial implementation
 
-No Node.js, npm, database, or backend is required for this prototype.
+Built the original browser-based topology simulator with network components and failure impact analysis.
 
-## How the algorithm works
+### Phase 3 — Concurrent change handling
 
-1. Build an adjacency list from links whose endpoints and link status are all operational.
-2. Start a BFS traversal from each operational server.
-3. Combine the nodes visited by those traversals into a reachable set.
-4. Any operational node outside that set is marked unreachable.
-5. Generate a report containing failed devices, failed links, unreachable nodes, and affected servers.
+Extended the application with concurrent update synchronisation, conflict handling and adaptive batching. Tested concurrent operations across two browser tabs.
 
-**Complexity:** BFS is `O(V + E)` per traversal. Since this prototype traverses from each operational server, the overall analysis is `O(S × (V + E))`, where `S` is the number of operational servers, `V` the number of devices, and `E` the number of links.
+**Note:** Phase 2 was not completed. The Phase 3 implementation builds on the original Phase 1 project.
 
-## Important limitation
+## Benchmark
 
-NetFlow is a **graph-based reachability simulator**, not a packet-level emulator. It does not implement real IP addressing, routing protocols, ACLs, latency, bandwidth, or actual device configuration. The recovery text is a general recommendation; it does not claim to configure a real network.
+The synthetic benchmark compares sequential and batched graph updates at three graph sizes:
+
+| Nodes | Links |
+|---:|---:|
+| 100 | 113 |
+| 500 | 570 |
+| 1,000 | 1,142 |
+
+Three benchmark runs were performed using 30 trials and 40 updates per trial.
+
+All tested runs reported matching final states. The measured batched medians were lower than sequential medians in the synthetic benchmark.
+
+**Limitations:** The benchmark excludes BroadcastChannel transport, actual Cytoscape rendering, browser painting and network latency. Its results should not be interpreted as end-to-end performance measurements.
+
+## Technology Stack
+
+- HTML5
+- CSS3
+- JavaScript
+- Cytoscape.js
+- BroadcastChannel API
+- Breadth-First Search (BFS)
+
+## Run Locally
+
+1. Clone the repository.
+2. Open a terminal in the project folder.
+3. Run:
+
+   `python3 -m http.server 8000`
+
+4. Open `http://localhost:8000`.
+
+5. Open `http://localhost:8000/benchmark.html` to run the synthetic benchmark.
+
+## Repository
+
+https://github.com/ajaysharma111/NetFlow
 
 ## Team
 
-- Ajay Sharma
-
-
-## Suggested demo flow
-
-1. Show the default healthy topology and run analysis.
-2. Select Router 1 and simulate failure.
-3. Run analysis and point out the unreachable device(s).
-4. Restore Router 1 and fail one link instead.
-5. Explain that BFS computes reachability from the graph, rather than using a pre-written animation.
-6. Save the topology and export the report.
+**The Net Engineers**

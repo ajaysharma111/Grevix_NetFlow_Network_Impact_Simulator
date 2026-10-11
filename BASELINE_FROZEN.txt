@@ -1,0 +1,9 @@
+NETFLOW FUNCTIONAL PROTOTYPE v1.0 — FROZEN BASELINE
+Date: 2026-10-11
+Team: The Net Engineers
+
+This folder preserves the functional prototype that passed the team's six reported manual synchronization tests. The source application files (index.html, style.css, app.js) are preserved unchanged from NetFlow_LinkSync_Improved.zip.
+
+Do not edit this baseline while performance experiments are in progress. Make future changes in a separate copy/branch and compare against this version.
+
+Scope: same-browser, same-origin multi-tab prototype using BroadcastChannel. This is not a durable, cross-device, server-authoritative collaboration system.
