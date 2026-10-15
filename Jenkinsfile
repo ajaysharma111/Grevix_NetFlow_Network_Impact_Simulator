@@ -1,4 +1,4 @@
-
+```groovy
 pipeline {
     agent any
 
@@ -30,59 +30,35 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Multi-Platform Docker Image') {
             steps {
                 sh '''
-                    docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
-                    docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest
+                    docker buildx build \
+                      --platform linux/amd64,linux/arm64 \
+                      -t ${DOCKER_IMAGE}:${BUILD_NUMBER} \
+                      -t ${DOCKER_IMAGE}:latest \
+                      --push .
                 '''
             }
         }
 
-        stage('Push to Docker Hub') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: "${DOCKER_CREDENTIALS}",
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS'
-                    )
-                ]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login \
-                          -u "$DOCKER_USER" --password-stdin
-                        docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}
-                        docker push ${DOCKER_IMAGE}:latest
-                        docker logout
-                    '''
-                }
-            }
-        }
-
-        stage('Deploy to Minikube') {
+        stage('Verify Docker Hub Image') {
             steps {
                 sh '''
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
-
-                    kubectl set image deployment/netflow \
-                      netflow=${DOCKER_IMAGE}:${BUILD_NUMBER}
-
-                    kubectl rollout status deployment/netflow \
-                      --timeout=180s
-                '''
-            }
-        }
-
-        stage('Verify Deployment') {
-            steps {
-                sh '''
-                    kubectl get deployments
-                    kubectl get pods
-                    kubectl get services
-                    echo "NetFlow deployment verification completed"
+                    docker buildx imagetools inspect ${DOCKER_IMAGE}:latest
+                    echo "Multi-platform image verification completed"
                 '''
             }
         }
     }
+
+    post {
+        success {
+            echo 'NetFlow multi-platform image built and pushed successfully!'
+        }
+        failure {
+            echo 'NetFlow pipeline failed. Check the build console output.'
+        }
+    }
 }
+```
