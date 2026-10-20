@@ -1,14 +1,13 @@
 
+
 pipeline {
     agent any
 
     environment {
         DOCKER_IMAGE = 'ajaysharma111/netflow'
-        DOCKER_CREDENTIALS = 'dockerhub-creds'
     }
 
     stages {
-
         stage('Source Code') {
             steps {
                 checkout scm
@@ -27,8 +26,7 @@ pipeline {
                     test -f Dockerfile
                     test -f k8s/deployment.yaml
                     test -f k8s/service.yaml
-
-                    echo "All NetFlow project files verified"
+                    echo "All project files verified"
                 '''
             }
         }
@@ -46,8 +44,6 @@ pipeline {
                         set -eu
                         set +x
 
-                        trap 'docker logout || true' EXIT
-
                         echo "$DOCKERHUB_TOKEN" | docker login \
                             --username "$DOCKERHUB_USER" \
                             --password-stdin
@@ -58,6 +54,8 @@ pipeline {
                             -t ${DOCKER_IMAGE}:${BUILD_NUMBER} \
                             -t ${DOCKER_IMAGE}:latest \
                             --push .
+
+                        docker logout || true
                     '''
                 }
             }
@@ -67,7 +65,6 @@ pipeline {
             steps {
                 sh '''
                     docker buildx imagetools inspect ${DOCKER_IMAGE}:latest
-                    echo "Docker image verification completed"
                 '''
             }
         }
@@ -77,9 +74,8 @@ pipeline {
         success {
             echo 'NetFlow CI/CD pipeline completed successfully!'
         }
-
         failure {
-            echo 'Pipeline failed. Check the Jenkins console output.'
+            echo 'Pipeline failed. Check Console Output.'
         }
     }
 }
