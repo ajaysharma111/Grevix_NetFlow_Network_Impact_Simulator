@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -21,31 +22,52 @@ pipeline {
                     test -f index.html
                     test -f app.js
                     test -f style.css
+                    test -f benchmark.html
+                    test -f benchmark.js
                     test -f Dockerfile
                     test -f k8s/deployment.yaml
                     test -f k8s/service.yaml
-                    echo "NetFlow project files verified"
+
+                    echo "All NetFlow project files verified"
                 '''
             }
         }
 
-        stage('Build Multi-Platform Docker Image') {
+        stage('Docker Build and Push') {
             steps {
-                sh '''
-                    docker buildx build \
-                      --platform linux/amd64,linux/arm64 \
-                      -t ${DOCKER_IMAGE}:${BUILD_NUMBER} \
-                      -t ${DOCKER_IMAGE}:latest \
-                      --push .
-                '''
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKERHUB_USER',
+                        passwordVariable: 'DOCKERHUB_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        set -eu
+                        set +x
+
+                        trap 'docker logout || true' EXIT
+
+                        echo "$DOCKERHUB_TOKEN" | docker login \
+                            --username "$DOCKERHUB_USER" \
+                            --password-stdin
+
+                        docker buildx build \
+                            --builder netflow-jenkins \
+                            --platform linux/amd64,linux/arm64 \
+                            -t ${DOCKER_IMAGE}:${BUILD_NUMBER} \
+                            -t ${DOCKER_IMAGE}:latest \
+                            --push .
+                    '''
+                }
             }
         }
 
-        stage('Verify Docker Hub Image') {
+        stage('Verify Docker Image') {
             steps {
                 sh '''
                     docker buildx imagetools inspect ${DOCKER_IMAGE}:latest
-                    echo "Multi-platform image verification completed"
+                    echo "Docker image verification completed"
                 '''
             }
         }
@@ -53,10 +75,11 @@ pipeline {
 
     post {
         success {
-            echo 'NetFlow multi-platform image built and pushed successfully!'
+            echo 'NetFlow CI/CD pipeline completed successfully!'
         }
+
         failure {
-            echo 'NetFlow pipeline failed. Check the build console output.'
+            echo 'Pipeline failed. Check the Jenkins console output.'
         }
     }
 }
